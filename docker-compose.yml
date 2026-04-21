@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mern_net
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - USER_SERVICE_URL=http://user-service:3001
+      - PRODUCT_SERVICE_URL=http://product-service:3002
+      - ORDER_SERVICE_URL=http://order-service:3003
+      - JWT_SECRET=supersecretkey_change_in_prod
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+    networks:
+      - mern_net
+
+  user-service:
+    build: ./services/user-service
+    container_name: user-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - MONGO_URI=mongodb://mongo:27017/users
+      - JWT_SECRET=supersecretkey_change_in_prod
+    depends_on:
+      - mongo
+    networks:
+      - mern_net
+
+  product-service:
+    build: ./services/product-service
+    container_name: product-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - MONGO_URI=mongodb://mongo:27017/products
+      - JWT_SECRET=supersecretkey_change_in_prod
+    depends_on:
+      - mongo
+    networks:
+      - mern_net
+
+  order-service:
+    build: ./services/order-service
+    container_name: order-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - MONGO_URI=mongodb://mongo:27017/orders
+      - JWT_SECRET=supersecretkey_change_in_prod
+      - PRODUCT_SERVICE_URL=http://product-service:3002
+    depends_on:
+      - mongo
+      - product-service
+    networks:
+      - mern_net
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
+    networks:
+      - mern_net
+
+volumes:
+  mongo_data:
+
+networks:
+  mern_net:
+    driver: bridge
