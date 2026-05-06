@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // This must match the name you gave in 'Global Tool Configuration' for SonarQube Scanner
-        SCANNER_HOME = tool 'sonar-token'
+        SCANNER_HOME = tool 'sonar-scanner'
     }
 
     stages {
