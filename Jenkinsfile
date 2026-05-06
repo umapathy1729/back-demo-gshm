@@ -1,34 +1,37 @@
+
 pipeline {
     agent any
-
-    environment {
-        // This must match the name you gave in 'Global Tool Configuration' for SonarQube Scanner
-        SCANNER_HOME = tool 'sonar-scanner'
-    }
 
     stages {
         stage('Checkout') {
             steps {
-                // Pulls the code from your Git repository
+                // Pulls your code from the Git repository
                 checkout scm
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                // 'sonar-server' must match the 'Name' you saved in 'System Configuration'
-                withSonarQubeEnv('sonar-token') {
-                    sh "${SCANNER_HOME}/bin/sonar-scanner \
-                    -Dsonar.projectKey=my-microservice-project \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=http://localhost:9000"
+                script {
+                    // 1. Get the path to the scanner tool named 'sonar-scanner'
+                    // This fixes the "null/bin" error you were seeing
+                    def scannerHome = tool 'sonar-scanner'
+                    
+                    // 2. Use the 'sonar-token' credential ID from your second photo
+                    withSonarQubeEnv('sonar-token') {
+                        // 3. Execute the scanner using the correct path
+                        sh "${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=my-microservice-project \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://localhost:9000"
+                    }
                 }
             }
         }
 
-        stage('Quality Gate') {
+        stage("Quality Gate") {
             steps {
-                // This waits for SonarQube to finish processing and returns a status
+                // Waits for SonarQube results (timeout set to 1 hour)
                 timeout(time: 1, unit: 'HOURS') {
                     waitForQualityGate abortPipeline: true
                 }
