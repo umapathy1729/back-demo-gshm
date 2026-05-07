@@ -23,7 +23,7 @@ pipeline {
                         sh "${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=my-microservice-project \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://localhost:9000"
+                        -Dsonar.host.url=http://13.200.14.126:9000/"
                     }
                 }
             }
