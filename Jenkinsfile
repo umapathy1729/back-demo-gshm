@@ -14,16 +14,17 @@ pipeline {
             steps {
                 script {
                     // 1. Get the path to the scanner tool named 'sonar-scanner'
-                    // This fixes the "null/bin" error you were seeing
                     def scannerHome = tool 'sonar-scanner'
-                    
-                    // 2. Use the 'sonar-token' credential ID from your second photo
+
+                    // 2. Use the 'sonar-scanner' name from your System Config
                     withSonarQubeEnv('sonar-scanner') {
-                        // 3. Execute the scanner using the correct path
+                        // 3. Execute the scanner. 
+                        // Added -Dsonar.javascript.node.maxspace=1024 to fix the WebSocket error
                         sh "${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=my-microservice-project \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://13.200.14.126:9000/"
+                        -Dsonar.host.url=http://13.200.14.126:9000 \
+                        -Dsonar.javascript.node.maxspace=1024"
                     }
                 }
             }
